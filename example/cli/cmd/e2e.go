@@ -35,9 +35,10 @@ func init() {
 }
 
 var e2eCmd = &cobra.Command{
-	Use:   "e2e",
-	Short: "Run end-to-end tests",
-	Long:  "Execute the PCeS agent end-to-end test suite",
+	Use:    "e2e",
+	Short:  "Run end-to-end tests",
+	Long:   "Execute the PCeS agent end-to-end test suite",
+	Hidden: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 		return runE2E()

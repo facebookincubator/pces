@@ -47,8 +47,7 @@ var (
 	grpcSocketPath string
 	certDir        string
 	osKeychain     bool
-	// TODO: Make it configurable.
-	defaultRenewalFactor = 0.5
+	renewalFactor  float64
 
 	rootCmd = &cobra.Command{
 		Use:   "pces-server",
@@ -74,6 +73,7 @@ func init() {
 	rootCmd.Flags().StringVar(&grpcSocketPath, "grpc-socket-path", "", "Path for the gRPC server socket (required). The socket will be refreshed before listening.")
 	rootCmd.Flags().StringVar(&certDir, "cert-dir", "", "Directory to save certificate files. If not specified, certificates will not be saved to disk.")
 	rootCmd.Flags().BoolVar(&osKeychain, "os-keychain", false, "Enable adding TLS certificates to the OS keychain/certificate store")
+	rootCmd.Flags().Float64Var(&renewalFactor, "renewal-factor", 0.5, "Factor used to determine when certificates should be renewed (0.0-1.0)")
 
 	rootCmd.MarkFlagRequired("ssh-socket-path")
 	rootCmd.MarkFlagRequired("grpc-socket-path")
@@ -359,7 +359,7 @@ func createTLSIssuer(logger *slog.Logger) (*issuers.TLSIssuer, crypto.Signer, er
 }
 
 func createUpdater(label string, certificate cert.Certificate, logger *slog.Logger) (storage.Updater, error) {
-	needsUpdateFunc, err := storage.NeedsRenewWithFactor(certificate, defaultRenewalFactor)
+	needsUpdateFunc, err := storage.NeedsRenewWithFactor(certificate, renewalFactor)
 	if err != nil {
 		return storage.Updater{}, fmt.Errorf("failed to create needs update function: %w", err)
 	}

@@ -27,7 +27,7 @@ PCeS addresses common certificate management challenges including **expiration m
 
 # Getting started
 
-The best place to start is *[`example`](https://github.com/facebookincubator/pces/tree/main/example)* folder.
+The best place to start is *[`example`](https://github.com/facebookincubator/pces/tree/main/example)* folder. You can also expore the [man pages](https://github.com/facebookincubator/pces/tree/main/example/man) for more details.
 
 The system consists of a [**certificate agent daemon**](https://github.com/facebookincubator/pces/tree/main/example/server) that handles automatic certificate issuance and renewal, and a [**command-line client**](https://github.com/facebookincubator/pces/tree/main/example/cli) for manual operations and status monitoring. Communication between components uses gRPC over Unix sockets.
 
@@ -144,15 +144,37 @@ go test ./...
 ## Run e2e tests
 
 ```bash
-go generate ./api/if/...          # Generate protobuf code
+# Generate protobuf code
+go generate ./api/if/...
+```
 
-go run ./example/server --ssh-socket-path=<ssh socket path> --grpc-socket-path=<grpc socket path> --cert-dir=<cert directory>        # Run a server w/o SKS
+```bash
+# Run a server w/o SKS
+go run ./example/server
+    --ssh-socket-path=<ssh socket path>
+    --grpc-socket-path=<grpc socket path>
+    --cert-dir=<cert directory>
 
-go run -tags sks_backend ./example/server --ssh-socket-path=<ssh socket path> --grpc-socket-path=<sgrpc ocket path> --cert-dir=<cert directory>        # Run a server with SKS
+# Run a server with SKS
+go run -tags sks_backend ./example/server
+    --ssh-socket-path=<ssh socket path>
+    --grpc-socket-path=<grpc socket path>
+    --cert-dir=<cert directory>
 
-go run ./example/server --ssh-socket-path=<sssh ocket path> --grpc-socket-path=<sgrpc ocket path> --cert-dir=<cert directory> --os-keychain       # Run a server with OS keychain integration (works for Windows only)
+# Run a server with OS keychain integration (works for Windows only)
+go run ./example/server
+    --ssh-socket-path=<ssh socket path>
+    --grpc-socket-path=<grpc socket path>
+    --cert-dir=<cert directory>
+    --os-keychain
+```
 
-go run ./example/server e2e --ssh-socket-path=<ssh socket path> --grpc-socket-path=<grpc socket path> --cert-dir=<cert directory>        # Run e2e tests from the client
+```bash
+# Run e2e tests from the client
+go run ./example/server e2e
+    --ssh-socket-path=<ssh socket path>
+    --grpc-socket-path=<grpc socket path>
+    --cert-dir=<cert directory>
 ```
 
 # License

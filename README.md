@@ -3,6 +3,10 @@
   <h1>PCeS: Persistent Certificate Store</h1>
 </div>
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/facebookincubator/pces)
+[![Go Build](https://github.com/facebookincubator/pces/actions/workflows/go-build.yml/badge.svg)](https://github.com/facebookincubator/pces/actions/workflows/go-build.yml)
+[![PCES E2E Testing](https://github.com/facebookincubator/pces/actions/workflows/e2e-test.yml/badge.svg)](https://github.com/facebookincubator/pces/actions/workflows/e2e-test.yml)
+
 **PCeS (Persistent Certificate Store)** is a certificate lifecycle management system written in Go.
 
 ## Key Features:

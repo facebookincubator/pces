@@ -64,7 +64,7 @@ func (tlsIssuer TLSIssuer) Issue(_ context.Context) (*tls.Certificate, error) {
 	}
 
 	cert := &tls.Certificate{
-		Certificate: [][]byte{certBytes},
+		Certificate: [][]byte{certBytes, cfg.CACert.Raw},
 		PrivateKey:  cfg.CertSigner,
 	}
 

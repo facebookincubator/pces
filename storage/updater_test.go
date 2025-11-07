@@ -126,7 +126,7 @@ func TestUpdaterExponentialBackoff(t *testing.T) {
 
 	go upd.run()
 
-	for i := 0; i < len(want)-1; i++ {
+	for i := range len(want) - 1 {
 		got := <-timing
 		if got < want[i]-eps || got > want[i]+eps {
 			t.Errorf("Unexpected update delay %d: got %v, want %v <= %v <= %v", i, got, want[i]-eps, got, want[i]+eps)
@@ -149,7 +149,7 @@ func TestDisableAutoUpdate(t *testing.T) {
 }
 
 func TestUpdaterClose(t *testing.T) {
-	for i := 0; i < 16; i++ {
+	for i := range 16 {
 		t.Run(fmt.Sprintf("iteration=%d", i), func(t *testing.T) {
 			updStarted := make(chan struct{})
 

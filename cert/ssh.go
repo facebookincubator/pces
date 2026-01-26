@@ -36,7 +36,7 @@ type SSHOption func(c *SSH) error
 // WithSSHCert sets the SSH certificate.
 func WithSSHCert(cert *ssh.Certificate) SSHOption {
 	return func(c *SSH) error {
-		c.common.cert = cert
+		c.cert = cert
 		return nil
 	}
 }

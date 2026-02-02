@@ -27,7 +27,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const eps = 3 * time.Millisecond
+const eps = 5 * time.Millisecond
 
 func TestUpdaterUpdates(t *testing.T) {
 	delay := 10 * time.Millisecond

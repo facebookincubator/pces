@@ -30,14 +30,6 @@ import (
 // Option is a functional option for configuring the PCeS gRPC client.
 type Option func(*Client) error
 
-// WithLogger sets the logger for the client.
-func WithLogger(logger *slog.Logger) Option {
-	return func(c *Client) error {
-		c.logger = logger
-		return nil
-	}
-}
-
 // Client implements a gRPC client for the PCeS API.
 type Client struct {
 	socketPath string

@@ -222,7 +222,6 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 	testDir = dir
-	status := m.Run()
-	os.RemoveAll(dir)
-	os.Exit(status)
+	defer os.RemoveAll(dir)
+	m.Run()
 }

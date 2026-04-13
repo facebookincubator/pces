@@ -62,11 +62,6 @@ func Execute() error {
 	return rootCmd.Execute()
 }
 
-// GetRootCmd returns the root command for documentation generation
-func GetRootCmd() *cobra.Command {
-	return rootCmd
-}
-
 func init() {
 	rootCmd.Flags().BoolVar(&verbose, "verbose", false, "Enable verbose logging")
 	rootCmd.Flags().StringVar(&sshSocketPath, "ssh-socket-path", "", "Path for the SSH agent socket (required). The socket will be refreshed before listening. Remember to set it as an environment variable SSH_AUTH_SOCK")

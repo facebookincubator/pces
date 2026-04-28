@@ -67,7 +67,7 @@ func WithSSHCertFromFile(path string) SSHOption {
 		if !ok {
 			return fmt.Errorf("WithSSHCertFromFile: cannot cast public key to ssh certificate")
 		}
-		c.common.cert = sshCert
+		c.cert = sshCert
 		return nil
 	}
 }
@@ -115,13 +115,13 @@ func NewSSH(signer ssh.Signer, issuer Issuer[ssh.Certificate], opts ...SSHOption
 }
 
 func (c *SSH) signerMatchesCert() bool {
-	if c.common.cert == nil {
+	if c.cert == nil {
 		return true
 	}
 
 	sshKey := c.signer.PublicKey()
 
-	return bytes.Equal(sshKey.Marshal(), c.common.cert.Key.Marshal())
+	return bytes.Equal(sshKey.Marshal(), c.cert.Key.Marshal())
 }
 
 // GetSigners returns signers backed by the SSH certificate key.

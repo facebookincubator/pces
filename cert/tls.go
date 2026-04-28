@@ -39,7 +39,7 @@ type TLSOption func(c *TLS) error
 // WithTLSCert sets the TLS certificate.
 func WithTLSCert(cert *tls.Certificate) TLSOption {
 	return func(c *TLS) error {
-		c.common.cert = cert
+		c.cert = cert
 		return nil
 	}
 }
@@ -157,30 +157,30 @@ func (c *TLS) init() error {
 	if err := c.signerMatchesLeaf(); err != nil {
 		return err
 	}
-	if c.common.cert != nil {
-		c.common.cert.PrivateKey = c.signer
+	if c.cert != nil {
+		c.cert.PrivateKey = c.signer
 	}
 	return nil
 }
 
 func (c *TLS) signerMatchesLeaf() error {
-	if c.common.cert == nil {
+	if c.cert == nil {
 		return nil
 	}
 
-	if c.common.cert != nil && c.common.cert.Leaf == nil {
-		leaf, err := x509.ParseCertificate(c.common.cert.Certificate[0])
+	if c.cert != nil && c.common.cert.Leaf == nil {
+		leaf, err := x509.ParseCertificate(c.cert.Certificate[0])
 		if err != nil {
 			return fmt.Errorf("%w: parsing leaf certificate: %w", ErrCertInvalid, err)
 		}
-		c.common.cert.Leaf = leaf
+		c.cert.Leaf = leaf
 	}
 
 	type equaler interface {
 		Equal(x crypto.PublicKey) bool
 	}
 
-	leafPubKey, ok := c.common.cert.Leaf.PublicKey.(equaler)
+	leafPubKey, ok := c.cert.Leaf.PublicKey.(equaler)
 	if !ok {
 		return fmt.Errorf("%w: leaf public key does not implement recommended Equal(crypto.PublicKey) bool function", ErrCertInvalid)
 	}
@@ -227,16 +227,16 @@ func (c *TLS) EncodedCert(_ context.Context) ([]byte, error) {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 
-	if c.common.cert == nil {
+	if c.cert == nil {
 		return nil, ErrCertNotFound
 	}
 
-	if len(c.common.cert.Certificate) == 0 {
+	if len(c.cert.Certificate) == 0 {
 		return nil, ErrCertInvalid
 	}
 
 	var encodedChain []byte
-	for _, certBytes := range c.common.cert.Certificate {
+	for _, certBytes := range c.cert.Certificate {
 		pemBlock := &pem.Block{Type: "CERTIFICATE", Bytes: certBytes}
 		encodedChain = append(encodedChain, pem.EncodeToMemory(pemBlock)...)
 	}

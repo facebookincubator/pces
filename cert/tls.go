@@ -168,7 +168,7 @@ func (c *TLS) signerMatchesLeaf() error {
 		return nil
 	}
 
-	if c.cert != nil && c.common.cert.Leaf == nil {
+	if c.cert != nil && c.cert.Leaf == nil {
 		leaf, err := x509.ParseCertificate(c.cert.Certificate[0])
 		if err != nil {
 			return fmt.Errorf("%w: parsing leaf certificate: %w", ErrCertInvalid, err)

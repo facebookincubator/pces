@@ -97,7 +97,7 @@ func TestSSHOptions(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c, err := NewSSH(tt.want.signer, tt.want.common.issuer, tt.options...)
+			c, err := NewSSH(tt.want.signer, tt.want.issuer, tt.options...)
 			if tt.failure != nil {
 				assert.ErrorIs(t, err, tt.failure)
 				return
@@ -233,7 +233,7 @@ func TestWithSSHCertFromFile(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to create SSH certificate: %v", err)
 		}
-		assert.True(t, equalCerts(*sshCert, *c.common.cert))
+		assert.True(t, equalCerts(*sshCert, *c.cert))
 	})
 }
 
@@ -289,18 +289,18 @@ func getSSHCertificate(certKey, caKey ssh.Signer) (*ssh.Certificate, error) {
 }
 
 func equalCerts(a, b ssh.Certificate) bool {
-	if len(a.Permissions.Extensions) == 0 {
-		a.Permissions.Extensions = nil
+	if len(a.Extensions) == 0 {
+		a.Extensions = nil
 	}
-	if len(a.Permissions.CriticalOptions) == 0 {
-		a.Permissions.CriticalOptions = nil
+	if len(a.CriticalOptions) == 0 {
+		a.CriticalOptions = nil
 	}
 
-	if len(b.Permissions.Extensions) == 0 {
-		b.Permissions.Extensions = nil
+	if len(b.Extensions) == 0 {
+		b.Extensions = nil
 	}
-	if len(b.Permissions.CriticalOptions) == 0 {
-		b.Permissions.CriticalOptions = nil
+	if len(b.CriticalOptions) == 0 {
+		b.CriticalOptions = nil
 	}
 
 	return bytes.Equal(a.Nonce, b.Nonce) &&

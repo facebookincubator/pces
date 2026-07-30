@@ -129,7 +129,7 @@ func TestTLSOptions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c, err := NewTLS(tt.want.signer, tt.want.common.issuer, tt.options...)
+			c, err := NewTLS(tt.want.signer, tt.want.issuer, tt.options...)
 			if tt.failure != nil {
 				assert.ErrorIs(t, err, tt.failure)
 				return
@@ -194,7 +194,7 @@ func TestTLSSign(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Equal(t, &signer.PublicKey, c.Public())
 
-			c.common.cert = tt.cert // cannot use WithTLSCert to initialise with invalid cert.
+			c.cert = tt.cert // cannot use WithTLSCert to initialise with invalid cert.
 
 			signature, err := c.SignMessage(rand.Reader, message, nil)
 			assert.ErrorIs(t, err, tt.err)
@@ -348,7 +348,7 @@ func TestWithTlsCertFromFile(t *testing.T) {
 		assert.Nil(t, err)
 		c, err := NewTLS(want.PrivateKey.(crypto.Signer), nil, WithTLSCertFromFile(path))
 		assert.Nil(t, err)
-		assert.Equal(t, *c.common.cert, want)
+		assert.Equal(t, *c.cert, want)
 	})
 }
 

@@ -126,7 +126,6 @@ func TestGetCert(t *testing.T) {
 	})
 
 	t.Run("Valid cert", func(t *testing.T) {
-		time.Now()
 		key := "key"
 		c := common[gossh.Certificate]{
 			cert: &gossh.Certificate{

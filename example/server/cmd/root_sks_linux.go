@@ -67,7 +67,7 @@ func createSKSKey(keyLabel, keyTag, sksKeyPath, akPath string) (sks.Key, error) 
 	}
 
 	if !bytes.Equal(newSKSBlob, sksKeyBlob) || !bytes.Equal(newAKBlob, akBlob) {
-		slog.Warn("Key blobs have changed, updating stored keys for %s", keyLabel)
+		slog.Warn("Key blobs have changed, updating stored keys", "keyLabel", keyLabel)
 		if err := storeKeys(newSKSBlob, sksKeyPath, newAKBlob, akPath); err != nil {
 			return nil, err
 		}

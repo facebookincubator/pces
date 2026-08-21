@@ -35,6 +35,7 @@ type Client struct {
 	socketPath string
 	logger     *slog.Logger
 	timeout    time.Duration
+	conn       *grpc.ClientConn
 	client     pces.PCeSAgentClient
 }
 
@@ -70,10 +71,16 @@ func NewClient(socketPath string, opts ...Option) (*Client, error) {
 		return nil, fmt.Errorf("failed to create gRPC client: %w", err)
 	}
 
+	client.conn = conn
 	client.client = pces.NewPCeSAgentClient(conn)
 	client.logger.Info("Created PCeS gRPC client", "socket_path", client.socketPath)
 
 	return client, nil
+}
+
+// Close closes the underlying gRPC connection.
+func (c *Client) Close() error {
+	return c.conn.Close()
 }
 
 // Renew sends a renew request to the PCeS gRPC server.

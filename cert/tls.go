@@ -111,6 +111,9 @@ func extractTLSValidity(cert *tls.Certificate) (validAfter, validBefore time.Tim
 
 	leaf := cert.Leaf
 	if leaf == nil {
+		if len(cert.Certificate) == 0 {
+			return time.Time{}, time.Time{}, ErrCertInvalid
+		}
 		var err error
 		leaf, err = x509.ParseCertificate(cert.Certificate[0])
 		if err != nil {
@@ -169,6 +172,9 @@ func (c *TLS) signerMatchesLeaf() error {
 	}
 
 	if c.cert != nil && c.cert.Leaf == nil {
+		if len(c.cert.Certificate) == 0 {
+			return fmt.Errorf("%w: certificate has no leaf and no raw certificate bytes", ErrCertInvalid)
+		}
 		leaf, err := x509.ParseCertificate(c.cert.Certificate[0])
 		if err != nil {
 			return fmt.Errorf("%w: parsing leaf certificate: %w", ErrCertInvalid, err)

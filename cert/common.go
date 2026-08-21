@@ -98,10 +98,10 @@ func (c *common[T]) GetCert(ctx context.Context) (any, error) {
 
 	validAfter, validBefore, err := c.lifetime(c.cert)
 	if err != nil {
-		return c.cert, err
+		return nil, err
 	}
 	if now := time.Now(); !now.Before(validBefore) || !now.After(validAfter) {
-		return c.cert, ErrCertExpired
+		return nil, ErrCertExpired
 	}
 
 	return *c.cert, nil // shallow copy

@@ -29,8 +29,4 @@ package pces
 
 //go:generate mockgen -destination=sshagent/mock_storage.go -package=sshagent github.com/facebookincubator/pces/storage Storage
 
-//go:generate mockgen -destination=tlsagent/mock_storage.go -package=tlsagent github.com/facebookincubator/pces/storage Storage
-
-//go:generate mockgen -destination=tlsagent/mock_cert.go -package=tlsagent github.com/facebookincubator/pces/cert Certificate
-
 //go:generate mockgen -destination=storage/mock_cert.go -package=storage github.com/facebookincubator/pces/cert Certificate

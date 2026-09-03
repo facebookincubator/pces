@@ -41,6 +41,7 @@ func runStatus() error {
 	if err != nil {
 		return err
 	}
+	defer c.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()

@@ -148,6 +148,7 @@ func testCertificateStatus(grpcSocketPath string, sshSocketPath string, certDir 
 	if err != nil {
 		return fmt.Errorf("failed to create gRPC client: %w", err)
 	}
+	defer c.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
@@ -198,6 +199,7 @@ func testCertificateRenewal(grpcSocketPath string, _ string, certDir string, tim
 	if err != nil {
 		return fmt.Errorf("failed to create gRPC client: %w", err)
 	}
+	defer c.Close()
 
 	renewReason := "e2e test renewal"
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
@@ -307,6 +309,7 @@ func testTLS(grpcSocketPath string, _ string, certDir string, timeout time.Durat
 	if err != nil {
 		return fmt.Errorf("failed to create gRPC client: %w", err)
 	}
+	defer c.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()

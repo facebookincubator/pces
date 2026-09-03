@@ -283,6 +283,27 @@ func (a *Agent) signers() (signers []ssh.Signer) {
 	return signers
 }
 
+// deadlineConn wraps a net.Conn and resets its deadline before every Read
+// or Write.
+type deadlineConn struct {
+	net.Conn
+	timeout time.Duration
+}
+
+func (c *deadlineConn) Read(b []byte) (int, error) {
+	if err := c.SetDeadline(time.Now().Add(c.timeout)); err != nil {
+		return 0, err
+	}
+	return c.Conn.Read(b)
+}
+
+func (c *deadlineConn) Write(b []byte) (int, error) {
+	if err := c.SetDeadline(time.Now().Add(c.timeout)); err != nil {
+		return 0, err
+	}
+	return c.Conn.Write(b)
+}
+
 // Serve starts the SSH agent server using the provided listener.
 func (a *Agent) serve(listener net.Listener) error {
 	a.logger.Info("SSH agent server listening")
@@ -299,16 +320,12 @@ func (a *Agent) serve(listener net.Listener) error {
 			return fmt.Errorf("failed to accept connection: %w", err)
 		}
 
-		if err := conn.SetDeadline(time.Now().Add(a.requestTimeout)); err != nil {
-			a.logger.Error("failed to set connection deadline", "error", err)
-			conn.Close()
-			continue
-		}
-
 		go func(c net.Conn) {
 			defer c.Close()
 
-			if err := agent.ServeAgent(a, c); err != nil && !errors.Is(err, io.EOF) {
+			// requestTimeout is an idle timeout here, not a hard cutoff.
+			dc := &deadlineConn{Conn: c, timeout: a.requestTimeout}
+			if err := agent.ServeAgent(a, dc); err != nil && !errors.Is(err, io.EOF) {
 				a.logger.Error("error serving agent connection", "error", err)
 			}
 		}(conn)

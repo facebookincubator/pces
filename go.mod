@@ -16,21 +16,22 @@ require (
 	github.com/facebookincubator/flog v0.0.0-20190930132826-d2511d0ce33c // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/google/btree v1.0.1 // indirect
-	github.com/google/certificate-transparency-go v1.1.2 // indirect
 	github.com/google/deck v0.0.0-20230104221208-105ad94aa8ae // indirect
-	github.com/google/go-attestation v0.5.1 // indirect
-	github.com/google/go-tpm v0.9.0 // indirect
-	github.com/google/go-tspi v0.3.0 // indirect
+	github.com/google/go-attestation v0.6.1 // indirect
+	github.com/google/go-tpm v0.9.8 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jgoguen/go-utils v0.0.0-20200211015258-b42ad41486fd // indirect
+	github.com/kr/pretty v0.2.1 // indirect
+	github.com/kr/text v0.2.0 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
 	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/text v0.37.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260414002931-afd174a4e478 // indirect
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 )
 
 require (

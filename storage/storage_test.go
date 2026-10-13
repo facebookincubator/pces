@@ -47,7 +47,7 @@ func TestStorageConstructor(t *testing.T) {
 		lock.Lock()
 		defer lock.Unlock()
 		now := time.Now()
-		if c1ValidAfter == c1ValidBefore {
+		if c1ValidAfter.Equal(c1ValidBefore) {
 			ts1 <- now
 			c1ValidAfter = now
 			c1ValidBefore = now.Add(10 * time.Millisecond)
@@ -76,7 +76,7 @@ func TestStorageConstructor(t *testing.T) {
 		lock.Lock()
 		defer lock.Unlock()
 		now := time.Now()
-		if c2ValidAfter == c2ValidBefore {
+		if c2ValidAfter.Equal(c2ValidBefore) {
 			ts2 <- now
 			c2ValidAfter = now
 			c2ValidBefore = now.Add(20 * time.Millisecond)

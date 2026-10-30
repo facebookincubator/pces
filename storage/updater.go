@@ -16,6 +16,7 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
@@ -69,7 +70,18 @@ const (
 	defaultMinRetry  = 30 * time.Second
 	defaultMaxRetry  = 30 * time.Minute
 	defaultFrequency = 10 * time.Second
+
+	// maxFlatNotReadyRetries bounds how many consecutive not-ready results are
+	// retried at the base interval before exponential backoff resumes.
+	maxFlatNotReadyRetries = 10
 )
+
+// ErrNotReady reports that an update could not be attempted because a
+// precondition was not satisfied, as opposed to the update being attempted and
+// failing. Updates reporting it are rescheduled at the minimum retry interval
+// rather than backed off exponentially, for at most maxFlatNotReadyRetries
+// consecutive results.
+var ErrNotReady = errors.New("update preconditions not met")
 
 // NeedsRenewWithFactor returns a function that determines if a certificate needs to be renewed
 // based on the provided factor. The factor must be between 0.0 and 1.0 inclusive.
@@ -129,6 +141,9 @@ func (upd Updater) run() {
 		retryIn   = upd.minRetry
 		reqs      = upd.reqs
 		feedbacks = make(chan feedback, 1)
+
+		// Consecutive not-ready results, reset by any other outcome.
+		notReady int
 	)
 	if upd.autoUpdate && upd.needsRenew() {
 		upd.reqs <- request{
@@ -169,6 +184,7 @@ func (upd Updater) run() {
 		case r := <-reqs:
 			pending = append(pending, r)
 			// Manual updates always reset retry interval.
+			notReady = 0
 			retryIn = upd.minRetry
 			retryAt = time.Now().Add(retryIn)
 
@@ -178,11 +194,27 @@ func (upd Updater) run() {
 
 			pending = pending[1:]
 
-			if fb.err == nil {
+			switch {
+			case fb.err == nil:
+				notReady = 0
 				retryIn = upd.minRetry
 				upd.logger.Info(fmt.Sprintf("updater: successfully renewed %q (reason %q)", upd.label, fb.reason))
-			} else {
+			case errors.Is(fb.err, ErrNotReady):
+				// Not reset once the cap is reached: resetting on the first
+				// backed-off attempt would reopen the flat window, and the two
+				// would alternate instead of escalating.
+				if notReady < maxFlatNotReadyRetries {
+					notReady++
+					retryIn = upd.minRetry
+					upd.logger.Debug("updater: preconditions not met, retrying at base interval",
+						"label", upd.label, "reason", fb.reason, "attempt", notReady, "retry_in", retryIn, "err", fb.err)
+				} else {
+					retryIn = min(retryIn*2, upd.maxRetry)
+					upd.logger.Info(fmt.Sprintf("updater: preconditions for %q still not met (%v) (reason %q), backing off, next attempt in %v", upd.label, fb.err, fb.reason, retryIn.Round(time.Second)))
+				}
+			default:
 				// Exponential backoff.
+				notReady = 0
 				retryIn = min(retryIn*2, upd.maxRetry)
 				upd.logger.Info(fmt.Sprintf("updater: failed to renew %q (%v) (reason %q), next attempt in %v", upd.label, fb.err, fb.reason, retryIn.Round(time.Minute)))
 			}

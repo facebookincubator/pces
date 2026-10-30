@@ -135,6 +135,122 @@ func TestUpdaterExponentialBackoff(t *testing.T) {
 	upd.close()
 }
 
+// TestUpdaterNotReadyDoesNotBackOff verifies that an update reporting
+// ErrNotReady is rescheduled at the base interval rather than escalating.
+func TestUpdaterNotReadyDoesNotBackOff(t *testing.T) {
+	const minRetry = 10 * time.Millisecond
+
+	// Flat, not 2x minRetry, 4x minRetry, ... as a genuine failure would give.
+	want := []time.Duration{0, minRetry, minRetry, minRetry}
+
+	timing := make(chan time.Duration, len(want))
+
+	var (
+		lock      sync.Mutex
+		iteration int
+	)
+
+	start := time.Now()
+	retryAt := start
+	update := func(_ context.Context, cb OnUpdate) {
+		lock.Lock()
+		defer lock.Unlock()
+		if iteration >= len(want) {
+			return
+		}
+		retryAt = time.Now()
+		cb(fmt.Errorf("prerequisite missing: %w", ErrNotReady))
+
+		timing <- time.Since(start)
+		start = time.Now()
+		iteration++
+	}
+
+	upd := NewUpdater("test", update, func() bool {
+		lock.Lock()
+		defer lock.Unlock()
+		return !time.Now().Before(retryAt)
+	}, UpdaterMinRetry(minRetry), UpdaterMaxRetry(time.Hour), UpdaterFrequency(time.Millisecond))
+
+	go upd.run()
+
+	for i := range want {
+		got := <-timing
+		if got < want[i]-eps || got > want[i]+eps {
+			t.Errorf("Unexpected update delay %d: got %v, want %v <= %v <= %v", i, got, want[i]-eps, got, want[i]+eps)
+		}
+	}
+	upd.close()
+}
+
+// TestUpdaterNotReadyBacksOffAfterCap verifies the flat window is bounded and
+// stays bounded: after maxFlatNotReadyRetries consecutive not-ready results the
+// updater resumes exponential backoff and keeps escalating. The growth
+// assertion covers several attempts, not just the first, so a counter that
+// reset would be caught.
+func TestUpdaterNotReadyBacksOffAfterCap(t *testing.T) {
+	const minRetry = 5 * time.Millisecond
+
+	// Enough past the cap to show the interval keeps growing.
+	const attempts = maxFlatNotReadyRetries + 4
+
+	timing := make(chan time.Duration, attempts)
+
+	var (
+		lock      sync.Mutex
+		iteration int
+	)
+
+	start := time.Now()
+	retryAt := start
+	update := func(_ context.Context, cb OnUpdate) {
+		lock.Lock()
+		defer lock.Unlock()
+		if iteration >= attempts {
+			return
+		}
+		retryAt = time.Now()
+		cb(fmt.Errorf("prerequisite missing: %w", ErrNotReady))
+
+		timing <- time.Since(start)
+		start = time.Now()
+		iteration++
+	}
+
+	upd := NewUpdater("test", update, func() bool {
+		lock.Lock()
+		defer lock.Unlock()
+		return !time.Now().Before(retryAt)
+	}, UpdaterMinRetry(minRetry), UpdaterMaxRetry(time.Hour), UpdaterFrequency(time.Millisecond))
+
+	go upd.run()
+
+	delays := make([]time.Duration, 0, attempts)
+	for range attempts {
+		delays = append(delays, <-timing)
+	}
+	upd.close()
+
+	// Everything inside the flat window stays at the base interval. Index 0 is
+	// the first attempt, which is immediate.
+	for i := 1; i <= maxFlatNotReadyRetries; i++ {
+		if delays[i] > minRetry+eps {
+			t.Errorf("attempt %d should still be at the base interval: got %v, want <= %v", i, delays[i], minRetry+eps)
+		}
+	}
+
+	// Past the cap every further attempt must wait strictly longer than the one
+	// before it.
+	for i := maxFlatNotReadyRetries + 1; i < attempts; i++ {
+		if delays[i] <= minRetry+eps {
+			t.Errorf("attempt %d should have backed off: got %v, want > %v", i, delays[i], minRetry+eps)
+		}
+		if i > maxFlatNotReadyRetries+1 && delays[i] <= delays[i-1] {
+			t.Errorf("attempt %d should have waited longer than attempt %d: got %v, previous %v", i, i-1, delays[i], delays[i-1])
+		}
+	}
+}
+
 func TestDisableAutoUpdate(t *testing.T) {
 	upd := NewUpdater("test", func(_ context.Context, cb OnUpdate) {
 		t.Errorf("Unexpected update")
